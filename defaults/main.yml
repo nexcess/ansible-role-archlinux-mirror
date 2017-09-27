@@ -1,0 +1,6 @@
+---
+
+archlinux_mirror_source: "mirror.us.leaseweb.net::archlinux/"
+archlinux_mirror_cron_disabled: true
+archlinux_mirror_cron_minute: "{{ 59 | random(seed=inventory_hostname) }}"
+archlinux_mirror_cron_hour: "8,14,20,2"

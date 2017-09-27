@@ -1,0 +1,32 @@
+---
+
+- name: Install Update CRON
+  template:
+    src="archlinux-mirror.j2"
+    dest="{{ mirror_cron_dir }}/archlinux-mirror"
+    owner="{{ mirror_unix_user }}"
+    group="{{ mirror_unix_group }}"
+    mode=0700
+
+- name: Setup CRON Schedule
+  cron:
+    name="Arch Linux"
+    minute="{{ archlinux_mirror_cron_minute }}"
+    hour="{{ archlinux_mirror_cron_hour }}"
+    user="{{ mirror_unix_user }}"
+    state="present"
+    job="{{ mirror_cron_dir }}/archlinux-mirror >/dev/null 2>&1"
+    disabled="{{ archlinux_mirror_cron_disabled }}"
+
+- stat:
+    path="{{ mirror_timestamp_dir }}/archlinux"
+  register: tsfile
+
+- name: Seed Timestamp File
+  copy:
+    content="0"
+    dest="{{ mirror_timestamp_dir }}/archlinux"
+    owner="{{ mirror_unix_user }}"
+    group="{{ mirror_unix_group }}"
+    mode=0644
+  when: not tsfile.stat.exists
