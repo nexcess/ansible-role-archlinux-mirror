@@ -1,0 +1,32 @@
+#!/bin/bash
+# https://wiki.archlinux.org/index.php/DeveloperWiki:NewMirrors
+# https://mailman.archlinux.org/pipermail/arch-mirrors/2012-May/000205.html
+# https://www.archlinux.org/mirrors/status/tier/1/
+
+SOURCE='{{ archlinux_mirror_source }}'
+DESTINATION='{{ mirror_doc_root }}/archlinux/'
+
+LOCKFILE=/tmp/${DESTINATION##*/}.lock
+
+
+if mkdir "$LOCKFILE" 2>/dev/null;  then
+    trap 'rm -rf -- "$LOCKFILE"' EXIT
+    timeout 1d rsync -rtlvH  \
+          --delete-after     \
+          --delay-updates    \
+          --exclude '.~tmp~' \
+          --human-readable   \
+          --progress         \
+          --stats            \
+          --safe-links       \
+          --itemize-changes  \
+          --timeout=10800    \
+    "${SOURCE}" "${DESTINATION}" &&
+    date '+%s' > {{ mirror_timestamp_dir }}/archlinux
+else
+    cat <<EOF 1>&2
+ERROR: Another rsync is already running and has the lock file
+$LOCKFILE.
+EOF
+
+fi
